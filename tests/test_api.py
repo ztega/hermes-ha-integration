@@ -661,6 +661,45 @@ class ApiTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(session.calls[0]["timeout"].total, 30)
         self.assertEqual(session.calls[0]["timeout"].sock_read, 12)
 
+    async def test_overlapping_streams_keep_each_requests_session_id(self):
+        a_started = asyncio.Event()
+        b_finished = asyncio.Event()
+
+        class Response(FakeResponse):
+            def __init__(self, session_id):
+                super().__init__(headers={"X-Hermes-Session-Id": session_id})
+                self.session_id = session_id
+
+            async def iter_any(self):
+                if self.session_id == "device-a":
+                    a_started.set()
+                    await b_finished.wait()
+                yield b'data: {"choices":[{"delta":{"content":"status only"}}]}\n\ndata: [DONE]\n\n'
+
+        class Session:
+            def post(self, url, *, headers, **kwargs):
+                return Response(headers["X-Hermes-Session-Id"])
+
+        client = HermesApiClient(
+            session=Session(), host="agent.local", port=8443, api_key="test-key"
+        )
+
+        async def turn_a():
+            async for _ in client.async_stream_message([], session_id="device-a"):
+                pass
+            return client.last_session_id
+
+        async def turn_b():
+            await a_started.wait()
+            async for _ in client.async_stream_message([], session_id="device-b"):
+                pass
+            result = client.last_session_id
+            b_finished.set()
+            return result
+
+        sessions = await asyncio.wait_for(asyncio.gather(turn_a(), turn_b()), timeout=2)
+        self.assertEqual(sessions, ["device-a", "device-b"])
+
     async def test_streaming_ignores_custom_sse_events(self):
         chunks = [
             "event: hermes.tool.progress\n",

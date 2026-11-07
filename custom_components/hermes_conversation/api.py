@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Any, AsyncGenerator
 
@@ -130,7 +131,9 @@ class HermesApiClient:
         self._stream_timeout = max(self._request_timeout, int(stream_timeout))
         # ssl=False disables certificate verification (for self-signed certs)
         self._ssl: bool | None = None if not use_ssl else (None if verify_ssl else False)
-        self._last_session_id: str | None = None
+        # HA requests share this client; session metadata belongs to the
+        # consuming request task, never to another overlapping voice turn.
+        self._last_session_id: ContextVar[str | None] = ContextVar("hermes_session_id", default=None)
 
     @property
     def base_url(self) -> str:
@@ -139,7 +142,7 @@ class HermesApiClient:
     @property
     def last_session_id(self) -> str | None:
         """Most recent X-Hermes-Session-Id observed from the API."""
-        return self._last_session_id
+        return self._last_session_id.get()
 
     def _headers(self, session_id: str | None = None) -> dict[str, str]:
         headers: dict[str, str] = {}
@@ -378,7 +381,7 @@ class HermesApiClient:
                         error_category=ERROR_CATEGORY_SERVER,
                     )
                 resolved_session_id = resp.headers.get("X-Hermes-Session-Id") or session_id
-                self._last_session_id = resolved_session_id
+                self._last_session_id.set(resolved_session_id)
                 return HermesApiResult(
                     text=self._extract_content(data),
                     session_id=resolved_session_id,
@@ -420,7 +423,7 @@ class HermesApiClient:
                 if resp.status >= 400:
                     raise self._classify_status_error(resp.status)
 
-                self._last_session_id = resp.headers.get("X-Hermes-Session-Id") or session_id
+                self._last_session_id.set(resp.headers.get("X-Hermes-Session-Id") or session_id)
 
                 # Parse SSE stream
                 buffer = ""

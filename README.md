@@ -1,5 +1,19 @@
 # Hermes Agent
 
+This is the `ztega` HACS fork of
+[WolframRavenwolf/hermes-ha-integration](https://github.com/WolframRavenwolf/hermes-ha-integration).
+It retains the normal Home Assistant/HACS installation and update lifecycle.
+Add `ztega/hermes-ha-integration` as the HACS custom Integration repository.
+Do not install this fork and upstream simultaneously: they share the same
+`hermes_conversation` integration domain.
+
+Fork v1.4.3 is based on upstream v1.4.2 and fixes concurrent requests sharing
+the last Hermes session ID. Response session metadata is local to each async
+request task, preventing different devices from acquiring the same session.
+The regression reproduces `device-b, device-b` before the fix and verifies
+`device-a, device-b` after it. See [FORK.md](FORK.md) for maintenance.
+
+
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -33,7 +47,7 @@ A [Home Assistant](https://home-assistant.io/) custom integration that connects 
 
 1. Open HACS in Home Assistant
 2. Click the three dots in the top right → **Custom repositories**
-3. Add `https://github.com/WolframRavenwolf/hermes-ha-integration` as an **Integration**
+3. Add `https://github.com/ztega/hermes-ha-integration` as an **Integration**
 4. Search for "Hermes Agent" and install it
 5. Restart Home Assistant
 
