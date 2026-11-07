@@ -1,6 +1,6 @@
 # Fork Maintenance
 
-This HACS fork tracks WolframRavenwolf/hermes-ha-integration. Version 1.4.3
+This Marketplace fork tracks WolframRavenwolf/hermes-ha-integration. Version 1.4.3
 starts from upstream v1.4.2, commit
 `43f4edee81f363bfc6753ef5165ffa98e770b753`.
 
@@ -9,10 +9,14 @@ Home Assistant shares the client across requests. A client-wide mutable last
 session ID lets overlapping conversations acquire each other's session IDs.
 The concurrency regression in `tests/test_api.py` protects the boundary.
 
+Version 1.4.4: HA versions that accept chat-session context receive the originating user's
+context, preserving HA session ownership and avoiding the 2027.5 deprecation.
+Older ChatLog releases retain their supported two-argument call.
+
 The integration keeps its upstream domain, entity identities and config
-flows, so HA owns configuration and HACS owns files and updates. Install only
+flows, so HA owns configuration and Marketplace owns files and updates. Install only
 one repository for `hermes_conversation`; never mount a homelab source copy
-over HACS's directory. Upstream retains its licence and attribution.
+over Marketplace's directory. Upstream retains its licence and attribution.
 
 ## Releases and Updates
 
@@ -26,10 +30,10 @@ over HACS's directory. Upstream retains its licence and attribution.
    then publish the matching stable GitHub release (first: `v1.4.3`). Do not
    move an already-published release tag. Fork versions have their own release
    sequence; account for the fork's latest version when importing upstream.
-5. Install the release through HACS and restart HA through the normal approved
+5. Install the release through Marketplace and restart HA through the normal approved
    update procedure. Verify profile routing, two overlapping conversations,
    follow-ups and actual voice playback. For a failed update, redownload the
-   previous reviewed version through HACS and restart; retain config entries.
+   previous reviewed version through Marketplace and restart; retain config entries.
 
 Do not distribute Home Assistant credentials, Hermes profiles or household
 data in this repository. The homelab repository manages connection policy

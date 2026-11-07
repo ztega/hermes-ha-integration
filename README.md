@@ -1,9 +1,9 @@
 # Hermes Agent
 
-This is the `ztega` HACS fork of
+This is the `ztega` Marketplace fork of
 [WolframRavenwolf/hermes-ha-integration](https://github.com/WolframRavenwolf/hermes-ha-integration).
-It retains the normal Home Assistant/HACS installation and update lifecycle.
-Add `ztega/hermes-ha-integration` as the HACS custom Integration repository.
+It retains the normal Home Assistant/Marketplace installation and update lifecycle.
+Add `ztega/hermes-ha-integration` as the Marketplace custom Integration repository.
 Do not install this fork and upstream simultaneously: they share the same
 `hermes_conversation` integration domain.
 
@@ -14,7 +14,7 @@ The regression reproduces `device-b, device-b` before the fix and verifies
 `device-a, device-b` after it. See [FORK.md](FORK.md) for maintenance.
 
 
-[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
+[![Marketplace](https://img.shields.io/badge/Marketplace-Custom-orange.svg)](https://www.home-assistant.io/integrations/marketplace/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A [Home Assistant](https://home-assistant.io/) custom integration that connects [Hermes Agent](https://hermes-agent.nousresearch.com/) by [Nous Research](https://nousresearch.com/) as a **conversation agent** for voice assistants and the conversation panel.
@@ -43,10 +43,10 @@ A [Home Assistant](https://home-assistant.io/) custom integration that connects 
 
 ## Installation
 
-### HACS (Recommended)
+### Marketplace (Recommended)
 
-1. Open HACS in Home Assistant
-2. Click the three dots in the top right → **Custom repositories**
+1. Open Marketplace in Home Assistant
+2. Open **Custom repositories**
 3. Add `https://github.com/ztega/hermes-ha-integration` as an **Integration**
 4. Search for "Hermes Agent" and install it
 5. Restart Home Assistant

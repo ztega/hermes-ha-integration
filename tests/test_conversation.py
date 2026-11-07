@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 import unittest
+from contextlib import contextmanager
 from types import SimpleNamespace
 from unittest import mock
 
@@ -76,6 +77,32 @@ class FakeClient:
 
 
 class ConversationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_chat_session_receives_originating_user_context(self):
+        original = conversation_module.async_get_chat_session
+        contexts = []
+
+        @contextmanager
+        def owned_session(hass, conversation_id, *, context):
+            contexts.append(context)
+            with original(hass, conversation_id) as session:
+                yield session
+
+        origin = SimpleNamespace(user_id="family-user")
+        agent = HermesConversationAgent(
+            FakeHass(), FakeConfigEntry(options={CONF_PROMPT: ""}), FakeClient(), session_map={}
+        )
+        with mock.patch.object(conversation_module, "async_get_chat_session", owned_session):
+            await agent.async_process(FakeConversationInput("Hello", context=origin))
+        self.assertEqual(contexts, [origin])
+
+    async def test_chat_session_supports_older_helper_without_context(self):
+        agent = HermesConversationAgent(
+            FakeHass(), FakeConfigEntry(options={CONF_PROMPT: ""}), FakeClient(), session_map={}
+        )
+        # The standard test helper has the old two-argument HA signature.
+        result = await agent.async_process(FakeConversationInput("Hello"))
+        self.assertEqual(result.response.speech["plain"]["speech"], "stored")
+
     async def test_same_device_new_conversation_reuses_session(self):
         entry = FakeConfigEntry(
             data={CONF_API_KEY: "secret"},

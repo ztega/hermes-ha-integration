@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
 import re
 import time
@@ -379,10 +380,16 @@ class HermesConversationAgent(ConversationEntity, AbstractConversationAgent):
                 and async_get_chat_log is not None
                 and async_get_chat_session is not None
             ):
+                # New HA binds chat sessions to the originating user. Older
+                # ChatLog releases do not accept this keyword yet.
+                session_kwargs = {}
+                if "context" in inspect.signature(async_get_chat_session).parameters:
+                    session_kwargs["context"] = user_input.context
                 with (
                     async_get_chat_session(
                         self.hass,
                         user_input.conversation_id,
+                        **session_kwargs,
                     ) as session,
                     async_get_chat_log(
                         self.hass,
